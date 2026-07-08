@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OperationType {
+  SALE
+  RENT
+}
+
+enum PropertyType {
+  FLAT
+  HOUSE
+  OFFICE
+  LAND
+  OTHER
+}
+
+enum ListingSource {
+  IDEALISTA
+  FOTOCASA
+  HABITACLIA
+  MILANUNCIOS
+  MOCK
+}
+
+enum SearchStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum ScrapeRunStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+enum OpportunityStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  WON
+  LOST
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  AGENT
+}
+
+model Tenant {
+  id            String         @id @default(uuid())
+  name          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  users         TenantUser[]
+  searches      TenantSearch[]
+  opportunities Opportunity[]
+  activities    Activity[]
+  auditLogs     AuditLog[]
+}
+
+model User {
+  id        String       @id @default(uuid())
+  email     String       @unique
+  name      String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  tenants   TenantUser[]
+}
+
+model TenantUser {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  role      UserRole @default(AGENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([tenantId, userId])
+}
+
+model TenantSearch {
+  id            String               @id @default(uuid())
+  tenantId      String
+  name          String
+  operation     OperationType
+  propertyType  PropertyType
+  status        SearchStatus         @default(ACTIVE)
+  minPrice      Int?
+  maxPrice      Int?
+  geoAreaId     String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  tenant        Tenant               @relation(fields: [tenantId], references: [id])
+  geoArea       GeoArea?             @relation(fields: [geoAreaId], references: [id])
+  demands       ScrapeDemand[]
+  matches       TenantListingMatch[]
+  opportunities Opportunity[]
+}
+
+model GeoArea {
+  id        String         @id @default(uuid())
+  label     String
+  country   String         @default("ES")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  cells     GeoCell[]
+  searches  TenantSearch[]
+}
+
+model GeoCell {
+  id        String         @id @default(uuid())
+  geoAreaId String
+  key       String         @unique
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  geoArea   GeoArea        @relation(fields: [geoAreaId], references: [id])
+  demands   ScrapeDemand[]
+  plans     ScrapePlan[]
+}
+
+model ScrapeDemand {
+  id             String        @id @default(uuid())
+  tenantSearchId String
+  geoCellId      String?
+  operation      OperationType
+  propertyType   PropertyType
+  minPrice       Int?
+  maxPrice       Int?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  tenantSearch   TenantSearch  @relation(fields: [tenantSearchId], references: [id])
+  geoCell        GeoCell?      @relation(fields: [geoCellId], references: [id])
+  plans          ScrapePlan[]
+}
+
+model ScrapePlan {
+  id             String         @id @default(uuid())
+  scrapeDemandId String?
+  sourceId       String?
+  geoCellId      String?
+  operation      OperationType
+  propertyType   PropertyType
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  demand         ScrapeDemand?  @relation(fields: [scrapeDemandId], references: [id])
+  source         Source?        @relation(fields: [sourceId], references: [id])
+  geoCell        GeoCell?       @relation(fields: [geoCellId], references: [id])
+  runs           ScrapeRun[]
+}
+
+model ScrapeRun {
+  id        String          @id @default(uuid())
+  planId    String
+  status    ScrapeRunStatus @default(PENDING)
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  plan      ScrapePlan      @relation(fields: [planId], references: [id])
+}
+
+model Source {
+  id        String          @id @default(uuid())
+  name      String
+  type      ListingSource   @unique
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  plans     ScrapePlan[]
+  listings  SourceListing[]
+}
+
+model SourceListing {
+  id                String             @id @default(uuid())
+  sourceId          String
+  externalId        String
+  url               String
+  rawPayload        Json?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  source            Source             @relation(fields: [sourceId], references: [id])
+  normalizedListing NormalizedListing?
+
+  @@unique([sourceId, externalId])
+}
+
+model NormalizedListing {
+  id              String               @id @default(uuid())
+  sourceListingId String               @unique
+  title           String
+  operation       OperationType
+  propertyType    PropertyType
+  price           Int?
+  locationLabel   String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  sourceListing   SourceListing        @relation(fields: [sourceListingId], references: [id])
+  matches         TenantListingMatch[]
+  opportunities   Opportunity[]
+}
+
+model TenantListingMatch {
+  id                  String            @id @default(uuid())
+  tenantId            String
+  tenantSearchId      String
+  normalizedListingId String
+  score               Float             @default(0)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  tenantSearch        TenantSearch      @relation(fields: [tenantSearchId], references: [id])
+  normalizedListing   NormalizedListing @relation(fields: [normalizedListingId], references: [id])
+
+  @@unique([tenantSearchId, normalizedListingId])
+}
+
+model Opportunity {
+  id                  String             @id @default(uuid())
+  tenantId            String
+  tenantSearchId      String?
+  normalizedListingId String?
+  title               String
+  status              OpportunityStatus  @default(NEW)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  tenant              Tenant             @relation(fields: [tenantId], references: [id])
+  tenantSearch        TenantSearch?      @relation(fields: [tenantSearchId], references: [id])
+  normalizedListing   NormalizedListing? @relation(fields: [normalizedListingId], references: [id])
+  activities          Activity[]
+}
+
+model Activity {
+  id            String       @id @default(uuid())
+  tenantId      String
+  opportunityId String?
+  type          String
+  note          String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  tenant        Tenant       @relation(fields: [tenantId], references: [id])
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id])
+}
+
+model SubscriptionPlan {
+  id        String              @id @default(uuid())
+  name      String
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  limits    SubscriptionLimit[]
+}
+
+model SubscriptionLimit {
+  id        String           @id @default(uuid())
+  planId    String
+  key       String
+  value     Int
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  plan      SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@unique([planId, key])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  tenantId  String?
+  actorId   String?
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+}

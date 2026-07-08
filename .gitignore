@@ -1,57 +1,13 @@
-
-###> symfony/backend ###
-/backend/.env.local
-/backend/.env.local.php
-/backend/.env.*.local
-/backend/config/secrets/prod/prod.decrypt.private.php
-/backend/public/bundles/
-/backend/public/assets/
-/backend/public/uploads/
-/backend/var/
-/backend/vendor/
-###< symfony/backend ###
-
-###> phpunit/phpunit ###
-/backend/phpunit.xml
-/backend/.phpunit.cache/
-/backend/.phpunit.result.cache
-###< phpunit/phpunit ###
-
-###> friendsofphp/php-cs-fixer ###
-/backend/.php-cs-fixer.php
-/backend/.php-cs-fixer.cache
-/backend/public/var/sessions/
-###< friendsofphp/php-cs-fixer ###
-
-###> phpstan/phpstan ###
-/backend/.phpstan.result.cache
-###< phpstan/phpstan ###
-
-###> Custom Exclusions ###
-# IDEs and Editors
-/.idea/
-/.vscode/
-
-# OS files and logs
-/.DS_Store
-/Thumbs.db
-/*.log
-
-# Node and Assets
-/frontend/node_modules/
-/frontend/dist/
-
-shared/uploads
-
-# Local configs and secrets
-/backend/passwords.local.txt
-/*.local.txt
-/backend/.env.migration
-
-# Temporary data and Uploads
-/tmp/
-/release/
-/backend/var/db-dumps/
-###< Custom Exclusions ###
-antigravity_backup
-.antigravity_backup
+node_modules
+.turbo
+.next
+dist
+coverage
+.env
+.env.*
+!.env.example
+*.log
+.idea
+Dockerfile.local
+tmp
+uploads
