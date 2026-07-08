@@ -7,7 +7,8 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "lint": "eslint .",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "dev:alt": "next dev -p 3002"
   },
   "dependencies": {
     "@repo/shared": "workspace:*",

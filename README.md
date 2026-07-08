@@ -10,17 +10,43 @@ Monorepo inicial para un SaaS B2B inmobiliario. La base prepara dashboard, API, 
 
 ## Arranque local
 
+Para desarrollo normal no hace falta Redis ni workers:
+
 ```bash
-cp .env.example .env
 pnpm install
-docker compose up -d
+pnpm infra
 pnpm db:generate
 pnpm dev
 ```
 
+URLs:
+
+- Web: `http://localhost:3000`
+- API: `http://localhost:3001`
+
+Para levantar tambien Redis y workers:
+
+```bash
+pnpm infra:all
+pnpm dev:all
+```
+
+Para parar la infraestructura:
+
+```bash
+pnpm infra:down
+```
+
+Puedes crear `.env` desde `.env.example` si quieres cambiar puertos o credenciales, pero los defaults locales funcionan sin copiarlo.
+
 ## Scripts
 
-- `pnpm dev`: apps en modo desarrollo con Turborepo.
+- `pnpm dev`: levanta web y API.
+- `pnpm dev:all`: levanta web, API y workers.
+- `pnpm dev:workers`: levanta solo workers.
+- `pnpm infra`: levanta PostgreSQL.
+- `pnpm infra:all`: levanta PostgreSQL y Redis.
+- `pnpm infra:down`: para Docker Compose.
 - `pnpm build`: compila apps y packages.
 - `pnpm lint`: ejecuta ESLint.
 - `pnpm test`: ejecuta Vitest donde aplique.
