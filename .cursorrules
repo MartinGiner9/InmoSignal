@@ -1,0 +1,15 @@
+# InmoSignal rules
+
+- No scraper por tenant.
+- El scraper no conoce tenantId.
+- `TenantSearch` es intención comercial.
+- `ScrapeDemand` es demanda técnica derivada.
+- `ScrapePlan` es plan global agregado.
+- `SourceListing` y `NormalizedListing` son globales.
+- `TenantListingMatch` controla visibilidad privada por tenant.
+- `Opportunity` es el núcleo del CRM futuro.
+- No scraping real sin aprobación explícita.
+- No WhatsApp ni llamadas frías automáticas.
+- No microservicios en fases iniciales.
+- Mantener Prisma, pnpm, turbo, lint, test y build funcionando.
+- Preferir cambios pequeños y testeables.

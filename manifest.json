@@ -1,0 +1,33 @@
+{
+  "project": "InmoSignal",
+  "version": "1.0.0",
+  "created_for": "SaaS B2B inmobiliario con scraping planner global",
+  "agents_count": 17,
+  "files": [
+    ".agent/agents/00-master-orchestrator.md",
+    ".agent/agents/01-product-strategy.md",
+    ".agent/agents/02-software-architect.md",
+    ".agent/agents/03-repo-steward.md",
+    ".agent/agents/04-database-prisma.md",
+    ".agent/agents/05-backend-nestjs.md",
+    ".agent/agents/06-scraping-planner.md",
+    ".agent/agents/07-scraping-adapter.md",
+    ".agent/agents/08-workers-queues.md",
+    ".agent/agents/09-frontend-nextjs.md",
+    ".agent/agents/10-ui-ux-saas.md",
+    ".agent/agents/11-qa-testing.md",
+    ".agent/agents/12-devops-ci.md",
+    ".agent/agents/13-security-compliance.md",
+    ".agent/agents/14-integrations-communications.md",
+    ".agent/agents/15-ai-automation.md",
+    ".agent/agents/16-code-reviewer.md",
+    ".cursorrules",
+    "README.md",
+    "docs/AGENTS_USAGE.md",
+    "docs/DEVELOPMENT_SEQUENCE.md",
+    "docs/GLOBAL_RULES.md",
+    "prompts/feature-implementation-template.md",
+    "prompts/next-phase-mock-flow.md",
+    "prompts/pre-merge-review.md"
+  ]
+}

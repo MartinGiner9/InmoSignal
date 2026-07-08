@@ -94,6 +94,7 @@ model Tenant {
   activities     Activity[]
   auditLogs      AuditLog[]
   subscription   TenantSubscription?
+  listingMatches TenantListingMatch[]
 }
 
 model User {
@@ -306,10 +307,12 @@ model TenantListingMatch {
   score               Float             @default(0)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
+  tenant              Tenant            @relation(fields: [tenantId], references: [id])
   tenantSearch        TenantSearch      @relation(fields: [tenantSearchId], references: [id])
   normalizedListing   NormalizedListing @relation(fields: [normalizedListingId], references: [id])
 
   @@unique([tenantSearchId, normalizedListingId])
+  @@index([tenantId])
 }
 
 model Opportunity {

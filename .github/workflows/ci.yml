@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate
       - run: pnpm --filter @repo/database prisma validate
       - run: pnpm lint

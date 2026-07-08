@@ -2,8 +2,8 @@ import type {
   PortalAdapter,
   RawListingCard,
   RawListingDetail,
-} from '../../types.js';
-import { normalize } from './normalizer.js';
+} from '../../types';
+import { normalize } from './normalizer';
 
 const cards: RawListingCard[] = [
   {

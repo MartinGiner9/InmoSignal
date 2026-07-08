@@ -16,3 +16,11 @@ El scraper nunca recibe `tenantId` ni ejecuta una busqueda por cliente. Solo pro
 ## Estado actual
 
 `packages/scraping-core` solo expone interfaces, adapters stub y un adapter mock. No hay llamadas reales a portales.
+
+## Tipos de listing
+
+- `AdapterNormalizedListing` es la salida comun de los adapters de scraping.
+- `NormalizedListing` es el modelo global interno persistido.
+- El mapper entre ambos se implementara mas adelante.
+- El scraper no conoce `tenantId`.
+- `TenantListingMatch` controla la visibilidad privada por tenant.

@@ -1,6 +1,6 @@
-import type { NormalizedListing, RawListingDetail } from '../../types.js';
+import type { AdapterNormalizedListing, RawListingDetail } from '../../types';
 
-export function normalize(detail: RawListingDetail): NormalizedListing {
+export function normalize(detail: RawListingDetail): AdapterNormalizedListing {
   return {
     source: 'fotocasa',
     externalId: detail.externalId,

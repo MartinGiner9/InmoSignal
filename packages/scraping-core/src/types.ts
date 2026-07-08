@@ -17,7 +17,7 @@ export type RawListingDetail = RawListingCard & {
   locationLabel?: string;
 };
 
-export type NormalizedListing = {
+export type AdapterNormalizedListing = {
   source: string;
   externalId: string;
   title: string;
@@ -32,5 +32,5 @@ export interface PortalAdapter {
   source: string;
   search(input: ScrapeSearchInput): Promise<RawListingCard[]>;
   getDetail(card: RawListingCard): Promise<RawListingDetail>;
-  normalize(detail: RawListingDetail): NormalizedListing;
+  normalize(detail: RawListingDetail): AdapterNormalizedListing;
 }

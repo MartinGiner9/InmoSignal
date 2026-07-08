@@ -1,5 +1,5 @@
-import type { PortalAdapter, RawListingDetail } from '../../types.js';
-import { normalize } from './normalizer.js';
+import type { PortalAdapter, RawListingDetail } from '../../types';
+import { normalize } from './normalizer';
 
 export const fotocasaAdapter: PortalAdapter = {
   source: 'fotocasa',
