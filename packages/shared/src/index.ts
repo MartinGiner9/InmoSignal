@@ -15,6 +15,15 @@ export const opportunityStatusSchema = z.enum([
   'won',
   'lost',
 ]);
+export const scrapeFrequencySchema = z.enum([
+  'daily',
+  'every_12_hours',
+  'every_6_hours',
+  'every_4_hours',
+  'every_2_hours',
+  'hourly',
+]);
+export const sellerTypeSchema = z.enum(['private', 'professional', 'unknown']);
 
 export const tenantSearchInputSchema = z.object({
   tenantId: z.string().uuid(),
@@ -22,32 +31,51 @@ export const tenantSearchInputSchema = z.object({
   operation: operationTypeSchema,
   propertyType: propertyTypeSchema,
   locationLabel: z.string().min(1),
+  centerLat: z.number().min(-90).max(90).optional(),
+  centerLng: z.number().min(-180).max(180).optional(),
   radiusMeters: z.number().int().positive().optional(),
   minPrice: z.number().int().nonnegative().optional(),
   maxPrice: z.number().int().positive().optional(),
+  frequency: scrapeFrequencySchema.default('every_6_hours'),
+  privateOnly: z.boolean().default(false),
+  maxMonthlyResults: z.number().int().positive().optional(),
+  geoAreaId: z.string().uuid().optional(),
+  sourceIds: z.array(z.string().uuid()).default([]),
 });
 
 export const normalizedListingSchema = z.object({
-  source: z.string(),
-  externalId: z.string(),
+  sourceListingId: z.string().uuid(),
   title: z.string(),
-  url: z.string().url(),
+  description: z.string().optional(),
   operation: operationTypeSchema,
   propertyType: propertyTypeSchema,
   price: z.number().int().nonnegative().optional(),
+  areaM2: z.number().int().positive().optional(),
+  rooms: z.number().int().nonnegative().optional(),
+  bathrooms: z.number().int().nonnegative().optional(),
   locationLabel: z.string().optional(),
+  addressText: z.string().optional(),
+  city: z.string().optional(),
+  province: z.string().optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+  sellerType: sellerTypeSchema.default('unknown'),
 });
 
 export const scrapePlanInputSchema = z.object({
-  areaKey: z.string(),
+  sourceId: z.string().uuid(),
+  geoCellId: z.string().uuid(),
   operation: operationTypeSchema,
   propertyType: propertyTypeSchema,
-  maxPrice: z.number().int().positive().optional(),
+  frequency: scrapeFrequencySchema,
+  scrapeDemandIds: z.array(z.string().uuid()).default([]),
+  priority: z.number().int().default(0),
 });
 
 export const matchResultSchema = z.object({
   tenantId: z.string().uuid(),
-  listingId: z.string().uuid(),
+  tenantSearchId: z.string().uuid(),
+  normalizedListingId: z.string().uuid(),
   score: z.number().min(0).max(1),
   reasons: z.array(z.string()).default([]),
 });

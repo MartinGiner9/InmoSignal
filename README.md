@@ -5,7 +5,7 @@ Monorepo inicial para un SaaS B2B inmobiliario. La base prepara dashboard, API, 
 ## Requisitos
 
 - Node.js 22+
-- pnpm 9+
+- pnpm 11+
 - Docker
 
 ## Arranque local
@@ -26,6 +26,17 @@ pnpm dev
 - `pnpm test`: ejecuta Vitest donde aplique.
 - `pnpm db:migrate`: crea/aplica migraciones Prisma.
 - `pnpm db:studio`: abre Prisma Studio.
+
+## Validacion
+
+```bash
+pnpm install
+pnpm build
+pnpm lint
+pnpm test
+pnpm db:generate
+pnpm --filter @repo/database prisma validate
+```
 
 ## Estructura
 

@@ -10,16 +10,20 @@ const links = [
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="shell">
-      <nav className="nav">
-        <strong>InmoSignal</strong>
+    <div className="grid min-h-screen bg-slate-50 text-slate-950 md:grid-cols-[220px_1fr]">
+      <nav className="bg-slate-950 p-6 text-white">
+        <strong className="text-lg">InmoSignal</strong>
         {links.map(([label, href]) => (
-          <Link key={href} href={href}>
+          <Link
+            className="mt-4 block text-sm text-slate-200 hover:text-white"
+            key={href}
+            href={href}
+          >
             {label}
           </Link>
         ))}
       </nav>
-      <main className="main">{children}</main>
+      <main className="p-8">{children}</main>
     </div>
   );
 }

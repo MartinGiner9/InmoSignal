@@ -34,6 +34,21 @@ enum SearchStatus {
   ARCHIVED
 }
 
+enum ScrapeFrequency {
+  DAILY
+  EVERY_12_HOURS
+  EVERY_6_HOURS
+  EVERY_4_HOURS
+  EVERY_2_HOURS
+  HOURLY
+}
+
+enum ScrapePlanStatus {
+  ACTIVE
+  PAUSED
+  DISABLED
+}
+
 enum ScrapeRunStatus {
   PENDING
   RUNNING
@@ -55,16 +70,30 @@ enum UserRole {
   AGENT
 }
 
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum SellerType {
+  PRIVATE
+  PROFESSIONAL
+  UNKNOWN
+}
+
 model Tenant {
-  id            String         @id @default(uuid())
-  name          String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  users         TenantUser[]
-  searches      TenantSearch[]
-  opportunities Opportunity[]
-  activities    Activity[]
-  auditLogs     AuditLog[]
+  id             String              @id @default(uuid())
+  name           String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  users          TenantUser[]
+  searches       TenantSearch[]
+  opportunities  Opportunity[]
+  activities     Activity[]
+  auditLogs      AuditLog[]
+  subscription   TenantSubscription?
 }
 
 model User {
@@ -90,22 +119,42 @@ model TenantUser {
 }
 
 model TenantSearch {
-  id            String               @id @default(uuid())
-  tenantId      String
-  name          String
-  operation     OperationType
-  propertyType  PropertyType
-  status        SearchStatus         @default(ACTIVE)
-  minPrice      Int?
-  maxPrice      Int?
-  geoAreaId     String?
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  tenant        Tenant               @relation(fields: [tenantId], references: [id])
-  geoArea       GeoArea?             @relation(fields: [geoAreaId], references: [id])
-  demands       ScrapeDemand[]
-  matches       TenantListingMatch[]
-  opportunities Opportunity[]
+  id                String               @id @default(uuid())
+  tenantId          String
+  name              String
+  operation         OperationType
+  propertyType      PropertyType
+  status            SearchStatus         @default(ACTIVE)
+  minPrice          Int?
+  maxPrice          Int?
+  locationLabel     String
+  centerLat         Decimal?
+  centerLng         Decimal?
+  radiusMeters      Int?
+  frequency         ScrapeFrequency      @default(EVERY_6_HOURS)
+  privateOnly       Boolean              @default(false)
+  maxMonthlyResults Int?
+  geoAreaId         String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  tenant            Tenant               @relation(fields: [tenantId], references: [id])
+  geoArea           GeoArea?             @relation(fields: [geoAreaId], references: [id])
+  sources           TenantSearchSource[]
+  demands           ScrapeDemand[]
+  matches           TenantListingMatch[]
+  opportunities     Opportunity[]
+}
+
+model TenantSearchSource {
+  id             String       @id @default(uuid())
+  tenantSearchId String
+  sourceId       String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  tenantSearch   TenantSearch @relation(fields: [tenantSearchId], references: [id])
+  source         Source       @relation(fields: [sourceId], references: [id])
+
+  @@unique([tenantSearchId, sourceId])
 }
 
 model GeoArea {
@@ -130,54 +179,77 @@ model GeoCell {
 }
 
 model ScrapeDemand {
-  id             String        @id @default(uuid())
+  id             String             @id @default(uuid())
   tenantSearchId String
   geoCellId      String?
   operation      OperationType
   propertyType   PropertyType
   minPrice       Int?
   maxPrice       Int?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  tenantSearch   TenantSearch  @relation(fields: [tenantSearchId], references: [id])
-  geoCell        GeoCell?      @relation(fields: [geoCellId], references: [id])
-  plans          ScrapePlan[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  tenantSearch   TenantSearch       @relation(fields: [tenantSearchId], references: [id])
+  geoCell        GeoCell?           @relation(fields: [geoCellId], references: [id])
+  plans          ScrapePlanDemand[]
 }
 
 model ScrapePlan {
-  id             String         @id @default(uuid())
-  scrapeDemandId String?
-  sourceId       String?
-  geoCellId      String?
-  operation      OperationType
-  propertyType   PropertyType
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  demand         ScrapeDemand?  @relation(fields: [scrapeDemandId], references: [id])
-  source         Source?        @relation(fields: [sourceId], references: [id])
-  geoCell        GeoCell?       @relation(fields: [geoCellId], references: [id])
-  runs           ScrapeRun[]
+  id           String             @id @default(uuid())
+  sourceId     String
+  geoCellId    String
+  operation    OperationType
+  propertyType PropertyType
+  frequency    ScrapeFrequency
+  status       ScrapePlanStatus   @default(ACTIVE)
+  priority     Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  source       Source             @relation(fields: [sourceId], references: [id])
+  geoCell      GeoCell            @relation(fields: [geoCellId], references: [id])
+  demands      ScrapePlanDemand[]
+  runs         ScrapeRun[]
+
+  @@unique([sourceId, geoCellId, operation, propertyType, frequency])
+}
+
+model ScrapePlanDemand {
+  id             String       @id @default(uuid())
+  scrapePlanId   String
+  scrapeDemandId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  scrapePlan     ScrapePlan   @relation(fields: [scrapePlanId], references: [id])
+  scrapeDemand   ScrapeDemand @relation(fields: [scrapeDemandId], references: [id])
+
+  @@unique([scrapePlanId, scrapeDemandId])
 }
 
 model ScrapeRun {
-  id        String          @id @default(uuid())
-  planId    String
-  status    ScrapeRunStatus @default(PENDING)
-  startedAt DateTime?
-  endedAt   DateTime?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  plan      ScrapePlan      @relation(fields: [planId], references: [id])
+  id           String          @id @default(uuid())
+  planId       String
+  status       ScrapeRunStatus @default(PENDING)
+  startedAt    DateTime?
+  endedAt      DateTime?
+  itemsFound   Int             @default(0)
+  itemsNew     Int             @default(0)
+  itemsUpdated Int             @default(0)
+  errorType    String?
+  errorMessage String?
+  snapshotUrl  String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  plan         ScrapePlan      @relation(fields: [planId], references: [id])
 }
 
 model Source {
-  id        String          @id @default(uuid())
+  id        String               @id @default(uuid())
   name      String
-  type      ListingSource   @unique
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  type      ListingSource        @unique
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
   plans     ScrapePlan[]
   listings  SourceListing[]
+  searches  TenantSearchSource[]
 }
 
 model SourceListing {
@@ -186,22 +258,39 @@ model SourceListing {
   externalId        String
   url               String
   rawPayload        Json?
+  contentHash       String?
+  firstSeenAt       DateTime           @default(now())
+  lastSeenAt        DateTime           @default(now())
+  publishedAt       DateTime?
+  snapshotUrl       String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   source            Source             @relation(fields: [sourceId], references: [id])
   normalizedListing NormalizedListing?
 
   @@unique([sourceId, externalId])
+  @@index([sourceId, url])
+  @@index([contentHash])
 }
 
 model NormalizedListing {
   id              String               @id @default(uuid())
   sourceListingId String               @unique
   title           String
+  description     String?
   operation       OperationType
   propertyType    PropertyType
   price           Int?
+  areaM2          Int?
+  rooms           Int?
+  bathrooms       Int?
   locationLabel   String?
+  addressText     String?
+  city            String?
+  province        String?
+  latitude        Decimal?
+  longitude       Decimal?
+  sellerType      SellerType           @default(UNKNOWN)
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
   sourceListing   SourceListing        @relation(fields: [sourceListingId], references: [id])
@@ -251,11 +340,12 @@ model Activity {
 }
 
 model SubscriptionPlan {
-  id        String              @id @default(uuid())
-  name      String
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
-  limits    SubscriptionLimit[]
+  id            String               @id @default(uuid())
+  name          String
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  limits        SubscriptionLimit[]
+  subscriptions TenantSubscription[]
 }
 
 model SubscriptionLimit {
@@ -268,6 +358,19 @@ model SubscriptionLimit {
   plan      SubscriptionPlan @relation(fields: [planId], references: [id])
 
   @@unique([planId, key])
+}
+
+model TenantSubscription {
+  id        String             @id @default(uuid())
+  tenantId  String             @unique
+  planId    String
+  status    SubscriptionStatus @default(TRIALING)
+  startedAt DateTime           @default(now())
+  endsAt    DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  tenant    Tenant             @relation(fields: [tenantId], references: [id])
+  plan      SubscriptionPlan   @relation(fields: [planId], references: [id])
 }
 
 model AuditLog {

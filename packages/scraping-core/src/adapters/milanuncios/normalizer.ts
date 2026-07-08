@@ -1,5 +1,4 @@
-import type { NormalizedListing } from '@repo/shared';
-import type { RawListingDetail } from '../../types.js';
+import type { NormalizedListing, RawListingDetail } from '../../types.js';
 
 export function normalize(detail: RawListingDetail): NormalizedListing {
   return {
